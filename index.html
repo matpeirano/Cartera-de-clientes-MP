@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carteras — IFA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="carteras.css"/>
+  <script defer src="carteras.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M10 6V10L13 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <span class="logo-text">Carteras</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="resumen">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.45"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.45"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor"/></svg>
+        Resumen
+      </button>
+      <button class="nav-item" data-view="composicion">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 1.5V7.5L12 10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Composicion
+      </button>
+      <button class="nav-item" data-view="posiciones">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 4h11M2 7.5h11M2 11h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Posiciones
+      </button>
+      <button class="nav-item" data-view="analisis">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 11L5 7L8 9L11 4.5L13 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="4" r="1.5" fill="currentColor"/></svg>
+        Analisis
+      </button>
+      <button class="nav-item" data-view="vencimientos">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="3" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 1.5V4M10 1.5V4M2 6.5h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Vencimientos
+        <span class="badge hidden" id="badgeVenc">0</span>
+      </button>
+      <button class="nav-item" data-view="comitentes">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="11.5" cy="5" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M13.5 12.5c0-1.8-1-3-2.5-3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Por comitente
+      </button>
+      <button class="nav-item" data-view="movimientos">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h11M9 4l4 3.5L9 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Movimientos
+        <span class="badge hidden" id="badgeMov">0</span>
+      </button>
+      <button class="nav-item" data-view="liquidez">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 2C7.5 2 3.5 6.5 3.5 9.5C3.5 11.9 5.3 14 7.5 14C9.7 14 11.5 11.9 11.5 9.5C11.5 6.5 7.5 2 7.5 2Z" fill="currentColor" opacity="0.7"/></svg>
+        Liquidez ociosa
+        <span class="badge hidden" id="badgeLiquidez" style="background:var(--amber)">!</span>
+      </button>
+      <button class="nav-item" data-view="historico">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 4V7.5L10 9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Historico
+        <span class="badge hidden" id="badgeHistorico">0</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="file-status-row">
+        <div class="status-dot" id="dotActual"></div>
+        <span class="status-label" id="labelActual">Sin datos</span>
+      </div>
+      <label class="load-btn">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1V8M6 8L4 6M6 8L8 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Cargar Excel
+        <input id="fileActual" type="file" accept=".xlsx,.xls,.csv" hidden/>
+      </label>
+      <button id="btnGuardarPeriodo" class="load-btn hidden" style="background:var(--purple-s);color:var(--purple);border-color:var(--purple);cursor:pointer;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 4L5 9L2 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Guardar periodo
+      </button>
+      <button id="btnLimpiarHistorico" class="load-btn" style="color:var(--red);border-color:transparent;background:transparent;cursor:pointer;margin-top:4px;">Limpiar historico</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="viewTitle">Resumen</h1>
+        <span class="view-sub" id="viewSub">Vision consolidada de carteras</span>
+      </div>
+      <div class="topbar-right">
+        <div class="filter-pill"><select id="filtroComitente" class="pill-select"><option value="TODOS">Todos los comitentes</option></select></div>
+        <div class="filter-pill"><select id="filtroTipo" class="pill-select"><option value="TODOS">Todos los tipos</option></select></div>
+        <div class="search-pill">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9 9L11.5 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input id="filtroTicker" type="text" placeholder="Ticker o instrumento..."/>
+        </div>
+      </div>
+    </header>
+
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="20" stroke="currentColor" stroke-width="1.5"/><path d="M26 14V26L34 32" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <p class="empty-title">Carga el Excel de carteras</p>
+      <p class="empty-desc">Columnas esperadas: comitente, cuenta, tenencia, preciocompra, instrumento, ticker, nominales, diastenencia.</p>
+      <label class="btn-load-large">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2V10M8 10L5 7M8 10L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Cargar Excel
+        <input type="file" accept=".xlsx,.xls,.csv" hidden id="fileEmpty"/>
+      </label>
+    </div>
+
+    <div id="appContent" class="hidden">
+
+      <!-- RESUMEN -->
+      <section id="viewResumen" class="view-section">
+        <div class="kpi-strip">
+          <div class="kpi-tile accent-b"><span class="kpi-label">Tenencia total USD</span><span class="kpi-val mono" id="kpiTenencia">-</span><div class="kpi-meta" id="kpiComitentes">-</div></div>
+          <div class="kpi-tile"><span class="kpi-label">Posiciones</span><span class="kpi-val mono" id="kpiPosiciones">-</span><div class="kpi-meta" id="kpiTickers">-</div></div>
+          <div class="kpi-tile accent-g"><span class="kpi-label">Resultado estimado</span><span class="kpi-val mono" id="kpiResultado">-</span><div class="kpi-meta" id="kpiResultadoPct">-</div></div>
+          <div class="kpi-tile accent-a"><span class="kpi-label">Dias promedio</span><span class="kpi-val mono" id="kpiDias">-</span><div class="kpi-meta">antiguedad media en cartera</div></div>
+        </div>
+        <div id="alertasLiquidez" style="padding:0 20px 12px;display:flex;flex-direction:column;gap:8px;"></div>
+        <div class="two-col" style="padding:0 20px 20px;">
+          <div class="panel-card"><div class="panel-head"><h2>Top posiciones</h2><span class="panel-note">Por valor de tenencia</span></div><div id="topPosiciones" class="bar-list"></div></div>
+          <div class="panel-card"><div class="panel-head"><h2>Top comitentes</h2><span class="panel-note">Por tenencia total</span></div><div id="topComitentes" class="bar-list"></div></div>
+        </div>
+      </section>
+
+      <!-- COMPOSICION -->
+      <section id="viewComposicion" class="view-section hidden">
+        <div class="two-col" style="padding:0 20px 12px;">
+          <div class="panel-card"><div class="panel-head"><h2>Por tipo de activo</h2><span class="panel-note">% de tenencia total</span></div><div class="donut-wrap"><svg id="donutTipo" viewBox="0 0 200 200" class="donut-svg"></svg><div id="legendTipo" class="donut-legend"></div></div></div>
+          <div class="panel-card"><div class="panel-head"><h2>Por comitente</h2><span class="panel-note">% de tenencia total</span></div><div class="donut-wrap"><svg id="donutComitente" viewBox="0 0 200 200" class="donut-svg"></svg><div id="legendComitente" class="donut-legend"></div></div></div>
+        </div>
+        <div style="padding:0 20px 20px;"><div class="panel-card"><div class="panel-head"><h2>Distribucion por tipo</h2><span class="panel-note">Tenencia USD</span></div><div id="barTipos" style="padding:16px;"></div></div></div>
+      </section>
+
+      <!-- POSICIONES -->
+      <section id="viewPosiciones" class="view-section hidden">
+        <div style="padding:0 20px 20px;">
+          <div class="panel-card">
+            <div class="panel-head"><h2>Detalle de posiciones</h2><span class="panel-note" id="posicionesCount">-</span></div>
+            <div class="table-wrap">
+              <table id="tablaPosiciones">
+                <thead><tr><th>Comitente</th><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Nominales</th><th class="tr">P.compra</th><th class="tr">Tenencia USD</th><th class="tr">Resultado</th><th class="tr">Rend.%</th><th class="tr">Dias</th><th class="tr">% cartera</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALISIS -->
+      <section id="viewAnalisis" class="view-section hidden">
+        <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:12px;">
+          <div class="panel-card"><div class="panel-head"><h2>Diagnostico automatico</h2><span class="panel-note">Basado en los datos de la cartera</span></div><div id="diagnosticoList" class="diagnostico-list"></div></div>
+          <div class="two-col">
+            <div class="panel-card"><div class="panel-head"><h2>Concentracion por emisor</h2><span class="panel-note">AUM agrupado por empresa</span></div><div id="emisorChart" style="padding:16px;"></div></div>
+            <div class="panel-card"><div class="panel-head"><h2>Concentracion top 5 posiciones</h2><span class="panel-note">vs resto de cartera</span></div><div id="concentracionChart" style="padding:16px;"></div></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-head"><h2>Rendimiento por activo</h2><span class="panel-note" id="rendNota">Activos con tenencia total mayor a USD 20.000</span></div>
+            <div id="rendimientoChart" style="padding:12px;overflow-x:auto;"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel-card">
+              <div class="panel-head"><h2>Duracion promedio renta fija</h2><span class="panel-note">Dias hasta vencimiento estimado</span></div>
+              <div id="duracionPanel" style="padding:16px;"></div>
+            </div>
+            <div class="panel-card">
+              <div class="panel-head"><h2>Posiciones con resultado negativo</h2><span class="panel-note">vs precio de compra</span></div>
+              <div class="table-wrap">
+                <table id="tablaEnRojo">
+                  <thead><tr><th class="tc">Clientes</th><th>Ticker</th><th>Instrumento</th><th class="tr">Tenencia total</th><th class="tr">Resultado total</th><th class="tr">Rend. prom.</th><th class="tr">Dias max</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VENCIMIENTOS -->
+      <section id="viewVencimientos" class="view-section hidden">
+        <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:12px;">
+          <div class="kpi-mini-row">
+            <div class="kpi-mini-card accent-r"><span>Vencen en 90 dias</span><strong class="mono" id="venc90">-</strong></div>
+            <div class="kpi-mini-card accent-a"><span>Vencen en 180 dias</span><strong class="mono" id="venc180">-</strong></div>
+            <div class="kpi-mini-card accent-b"><span>Vencen en 360 dias</span><strong class="mono" id="venc360">-</strong></div>
+            <div class="kpi-mini-card"><span>Sin fecha detectada</span><strong class="mono" id="vencSinFecha">-</strong></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-head"><h2>Proximos vencimientos</h2><span class="panel-note">Bonos, ONs y LECAPs con fecha detectada — ordenados por fecha</span></div>
+            <div class="table-wrap">
+              <table id="tablaVencimientos">
+                <thead><tr><th class="tc">Clientes</th><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Tenencia total</th><th class="tr">Fecha vto.</th><th class="tr">Dias restantes</th><th class="tc">Alerta</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-head"><h2>Renta fija sin fecha detectada</h2><span class="panel-note">Revisar manualmente</span></div>
+            <div class="table-wrap">
+              <table id="tablaVencSinFecha">
+                <thead><tr><th class="tc">Clientes</th><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Tenencia total</th><th class="tr">Dias max</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- POR COMITENTE -->
+      <section id="viewComitentes" class="view-section hidden">
+        <div style="padding:0 20px 20px;">
+          <div id="comitentesList" style="display:flex;flex-direction:column;gap:16px;"></div>
+        </div>
+      </section>
+
+      <!-- MOVIMIENTOS -->
+      <section id="viewMovimientos" class="view-section hidden">
+        <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:12px;">
+          <div id="movimientosEmpty" class="inline-empty">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M4 16H28M4 16L10 10M4 16L10 22M28 16L22 10M28 16L22 22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <p>Guarda al menos dos periodos en el Historico para ver los movimientos entre ellos.</p>
+          </div>
+          <div id="movimientosContent" class="hidden">
+            <div class="kpi-mini-row" style="margin-bottom:12px;">
+              <div class="kpi-mini-card accent-g"><span>Delta tenencia total</span><strong class="mono" id="movDelta">-</strong></div>
+              <div class="kpi-mini-card"><span>Comparando</span><strong class="mono" id="movPeriodos" style="font-size:13px;">-</strong></div>
+            </div>
+            <div class="filter-pill" style="margin-bottom:12px;display:inline-block;">
+              <select id="filtroPeriodoMov" class="pill-select">
+                <option value="">Seleccionar periodo a comparar...</option>
+              </select>
+            </div>
+            <div class="panel-card" style="margin-bottom:12px;">
+              <div class="panel-head"><h2>Posiciones nuevas</h2><span class="panel-note">No estaban en el periodo anterior</span></div>
+              <div class="table-wrap">
+                <table id="tablaMovNuevas">
+                  <thead><tr><th class="tc">Clientes</th><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Tenencia total</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel-card" style="margin-bottom:12px;">
+              <div class="panel-head"><h2>Posiciones cerradas</h2><span class="panel-note">Estaban en el periodo anterior y ya no estan</span></div>
+              <div class="table-wrap">
+                <table id="tablaMovCerradas">
+                  <thead><tr><th>Comitente</th><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Tenencia anterior</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel-card" style="margin-bottom:12px;">
+              <div class="panel-head"><h2>Posiciones que crecieron</h2><span class="panel-note">Mayor tenencia vs periodo anterior — ordenado por mayor variacion</span></div>
+              <div class="table-wrap">
+                <table id="tablaMovCrecieron">
+                  <thead><tr><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Nominales ant.</th><th class="tr">Nominales act.</th><th class="tr">Variacion neta</th><th class="tr">Variacion %</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel-card">
+              <div class="panel-head"><h2>Posiciones que cayeron</h2><span class="panel-note">Menor tenencia vs periodo anterior — ordenado por mayor caida</span></div>
+              <div class="table-wrap">
+                <table id="tablaMovCayeron">
+                  <thead><tr><th>Ticker</th><th>Instrumento</th><th>Tipo</th><th class="tr">Nominales ant.</th><th class="tr">Nominales act.</th><th class="tr">Variacion neta</th><th class="tr">Variacion %</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIQUIDEZ OCIOSA -->
+      <section id="viewLiquidez" class="view-section hidden">
+        <div style="padding:0 20px 20px;">
+          <div id="liquidezContainer"></div>
+        </div>
+      </section>
+
+      <!-- HISTORICO -->
+      <section id="viewHistorico" class="view-section hidden">
+        <div style="padding:0 20px 20px;"><div id="historicoContainer"></div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="modalGuardar" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 class="modal-title">Guardar periodo</h3>
+    <p class="modal-desc">Este Excel quedara guardado en tu navegador. La proxima vez que abras la pagina, el historico va a seguir ahi automaticamente.</p>
+    <div class="modal-field"><label>Nombre del periodo</label><input id="inputPeriodoLabel" type="text" placeholder="Ej: Mayo 2025"/></div>
+    <div class="modal-field"><label>Fecha del reporte</label><input id="inputPeriodoFecha" type="date"/></div>
+    <div class="modal-actions">
+      <button id="btnCancelarGuardar" class="modal-btn-cancel">Cancelar</button>
+      <button id="btnConfirmarGuardar" class="modal-btn-ok">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+</body>
+</html>
